@@ -1,6 +1,9 @@
 #![feature(proc_macro_hygiene, decl_macro)]
 
-#[macro_use] extern crate rocket;
+#[macro_use]
+extern crate rocket;
+
+use homrs_lib::initialize_db;
 
 #[get("/")]
 fn index() -> &'static str {
@@ -8,5 +11,6 @@ fn index() -> &'static str {
 }
 
 fn main() {
+    let _ = initialize_db();
     rocket::ignite().mount("/api", routes![index]).launch();
 }

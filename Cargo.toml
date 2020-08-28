@@ -4,10 +4,18 @@ version = "0.1.0"
 authors = ["GimpFlamingo <rayjkochenderfer@gmail.com>"]
 edition = "2018"
 
+[lib]
+name = "homrs_lib"
+path = "src/lib.rs"
+
+[[bin]]
+name = "homrs"
+path = "src/main.rs"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 rocket = "0.4.5"
-rocket-contrib = "0.4.5"
-diesel = { version = "1.4.4", features = ["postgres"] }
+rocket_contrib = "0.4.5"
+diesel = { version = "1.4.4", features = ["postgres", "r2d2"] }
 dotenv = "0.15.0"
