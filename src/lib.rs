@@ -1,8 +1,14 @@
-mod db;
 mod error;
+pub mod db;
+pub mod models;
+pub mod schema;
 
 #[macro_use]
 extern crate diesel;
 extern crate dotenv;
 
-pub fn initialize_db() {}
+use db::PgPool;
+
+pub fn initialize_db() {
+
+}

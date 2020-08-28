@@ -21,3 +21,8 @@ pub fn initialize() -> PgPool {
 
     pool
 }
+
+/// Handles the creation of connections from the PgPool
+pub fn pool_handler(pool: PgPool) -> Result<PgPooledConnection> {
+    Ok(pool.get()?)
+}

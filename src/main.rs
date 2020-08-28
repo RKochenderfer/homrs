@@ -4,6 +4,7 @@
 extern crate rocket;
 
 use homrs_lib::initialize_db;
+mod routes;
 
 #[get("/")]
 fn index() -> &'static str {
