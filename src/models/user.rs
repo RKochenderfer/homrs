@@ -1,7 +1,6 @@
 use crate::schema::users;
 use chrono::NaiveDateTime;
 use diesel::RunQueryDsl;
-use serde::{Deserialize, Serialize};
 
 /// Struct modeling a user in the database
 #[derive(Queryable)]
@@ -18,12 +17,12 @@ pub struct User {
 }
 
 impl User {
-    pub fn get_by_id(id: i32) {
-
-    }
-    pub fn get_by_email(email: &str) {
-
-    }
+    // pub fn get_by_id(id: i32) -> User {
+    //     unreachable!()
+    // }
+    // pub fn get_by_email(email: &str) -> User {
+    //     unreachable!()
+    // }
 }
 
 /// The struct used to insert a user into the database
@@ -37,16 +36,15 @@ pub struct NewUser<'a> {
     pub user_role: &'a str,
 }
 
-#[derive(Serialize)]
 pub struct PostUser<'a> {
-    pub email: &'a strs,
+    pub email: &'a str,
     pub first_name: &'a str,
     pub last_name: &'a str,
     pub password: &'a str,
     pub user_role: &'a str,
 }
 
-impl NewUser {
+impl<'a> NewUser<'a> {
     fn strong_password() {
 
     }

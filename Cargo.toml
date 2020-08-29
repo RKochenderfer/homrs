@@ -3,15 +3,6 @@ name = "homrs"
 version = "0.1.0"
 authors = ["GimpFlamingo <rayjkochenderfer@gmail.com>"]
 edition = "2018"
-
-[lib]
-name = "homrs_lib"
-path = "src/lib.rs"
-
-[[bin]]
-name = "homrs"
-path = "src/main.rs"
-
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
