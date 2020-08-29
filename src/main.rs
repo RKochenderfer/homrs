@@ -7,7 +7,11 @@ extern crate diesel;
 #[macro_use]
 extern crate serde;
 
+pub mod schema;
 mod routes;
+mod cust_error;
+mod models;
+mod db;
 
 #[get("/")]
 fn index() -> &'static str {
