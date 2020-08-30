@@ -1,6 +1,9 @@
 use std::error;
 use std::fmt;
 use std::convert::TryFrom;
+use rocket::response::status;
+use crate::models::response::GenericResponse;
+use rocket_contrib::json::Json;
 
 type BoxedError = Box<dyn std::error::Error + Send + Sync>;
 
@@ -15,3 +18,6 @@ impl Error {
         Box::try_from(error).unwrap()
     }
 }
+
+/// Error response for a post bad request to /users
+pub type BadRequestPostUser<'a> = status::BadRequest<Json<GenericResponse<'a>>>;

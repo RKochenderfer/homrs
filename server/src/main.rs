@@ -3,15 +3,20 @@
 #[macro_use]
 extern crate rocket;
 #[macro_use]
+extern crate rocket_contrib;
+#[macro_use]
 extern crate diesel;
 #[macro_use]
 extern crate serde;
+extern crate argon2;
 
 pub mod schema;
 mod routes;
 mod cust_error;
 mod models;
-mod db;
+
+#[database("pg_db")]
+struct Database(rocket_contrib::databases::diesel::PgConnection);
 
 #[get("/")]
 fn index() -> &'static str {
@@ -19,5 +24,8 @@ fn index() -> &'static str {
 }
 
 fn main() {
-    rocket::ignite().mount("/api", routes![index]).launch();
+    rocket::ignite()
+        .attach(Database::fairing())
+        .mount("/api", routes![index])
+        .launch();
 }

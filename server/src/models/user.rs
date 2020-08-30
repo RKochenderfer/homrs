@@ -1,15 +1,19 @@
 use crate::cust_error::{Result, Error};
 use crate::schema::{users};
 use chrono::NaiveDateTime;
-use diesel::RunQueryDsl;
+use diesel::{RunQueryDsl, insert_into, PgConnection};
+use argon2::{self, Config};
+use serde::{Deserialize, Serialize};
+// use crate::db::PgPooledConnection;
 
 /// Struct modeling a user in the database
-#[derive(Queryable)]
+#[derive(Queryable, Serialize, Deserialize)]
 pub struct User {
     pub id: i32,
     pub email: String,
     pub first_name: String,
     pub last_name: String,
+    #[serde(skip)]
     pub password_hash: String,
     pub user_role: String,
     pub created_at: NaiveDateTime,
@@ -17,23 +21,33 @@ pub struct User {
 }
 
 impl User {
-    // pub fn get_by_id(id: i32) -> User {
-    //     unreachable!()
-    // }
-    // pub fn get_by_email(email: &str) -> User {
-    //     unreachable!()
-    // }
+    pub fn create_user(conn: &PgConnection, new_user: &PostUser) -> User {
+        use crate::schema::users::dsl::*;
+
+        let salt = std::env::var("SALT").unwrap();
+        let config = Config::default();
+        let hash = argon2::hash_encoded(new_user.password.as_bytes(), salt.as_bytes(), &config).unwrap();
+        let insert = InsertUser {
+            email: new_user.email.to_owned(),
+            first_name: new_user.first_name.to_owned(),
+            last_name: new_user.last_name.to_owned(),
+            password_hash: hash,
+            user_role: new_user.user_role.to_owned(),
+        };
+
+        insert_into(users).values(&insert).get_result(conn).unwrap()
+    }
 }
 
 /// The struct used to insert a user into the database
 #[derive(Insertable)]
 #[table_name = "users"]
-pub struct NewUser<'a> {
-    pub email: &'a str,
-    pub first_name: &'a str,
-    pub last_name: &'a str,
-    pub password_hash: &'a str,
-    pub user_role: &'a str,
+pub struct InsertUser {
+    pub email: String,
+    pub first_name: String,
+    pub last_name: String,
+    pub password_hash: String,
+    pub user_role: String,
 }
 
 #[derive(Deserialize)]
