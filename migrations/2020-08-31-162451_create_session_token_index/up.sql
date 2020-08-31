@@ -1,3 +1,3 @@
 -- Your SQL goes here
-CREATE UNIQUE INDEX index_token
+CREATE UNIQUE INDEX IF NOT EXISTS index_token
 ON sessions (token)
