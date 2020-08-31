@@ -9,6 +9,7 @@ pub struct GenericResponse {
 }
 
 impl GenericResponse {
+    /// Generates a bad request to be returned by rocket
     pub fn new_bad_request(message: &str) -> status::BadRequest<Json<GenericResponse>> {
         let gr = GenericResponse {
             message: message.to_owned(),
