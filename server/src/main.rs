@@ -36,6 +36,7 @@ fn main() {
         .mount("/api", routes![
             routes::users::post,
             routes::sessions::post,
+            routes::sessions::delete,
         ])
         .launch();
 }

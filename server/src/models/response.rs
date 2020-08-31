@@ -9,8 +9,15 @@ pub struct GenericResponse {
 }
 
 impl GenericResponse {
+    pub fn new(message: &str) -> GenericResponse {
+        GenericResponse {
+            message: message.to_owned(),
+            ok: true
+        }
+    }
+
     /// Generates a bad request to be returned by rocket
-    pub fn new_bad_request(message: &str) -> status::BadRequest<Json<GenericResponse>> {
+    pub fn new_bad_response(message: &str) -> status::BadRequest<Json<GenericResponse>> {
         let gr = GenericResponse {
             message: message.to_owned(),
             ok: false,

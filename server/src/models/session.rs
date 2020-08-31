@@ -42,6 +42,16 @@ impl Session {
 
         Ok(insert_into(sessions).values(insert).get_result(conn).expect("Failed to insert session."))
     }
+
+    pub fn destroy<'a>(conn: &PgConnection, session_token: &'a str) -> Result<&'a str> {
+        let deleted_count = diesel::delete(sessions.filter(token.eq(session_token))).execute(conn)?;
+
+        if deleted_count > 0 {
+            Ok(session_token)
+        } else {
+            Err(Error::boxed(&format!("Session token {} not found", session_token)))
+        }
+    }
 }
 
 #[derive(Insertable)]
@@ -77,5 +87,16 @@ impl<'a> PostSession<'a> {
         } else {
             Err(Error::boxed("Unable to create user session. User does not exist"))
         }
+    }
+}
+
+#[derive(Deserialize)]
+pub struct DeleteSession<'a> {
+    pub session_token: &'a str,
+}
+
+impl<'a> DeleteSession<'a> {
+    pub fn delete_session(&self, conn: &PgConnection) -> Result<&str> {
+        Session::destroy(conn, self.session_token)
     }
 }
