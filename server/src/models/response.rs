@@ -1,6 +1,6 @@
-use serde::{Serialize};
 use rocket::response::status;
 use rocket_contrib::json::Json;
+use serde::Serialize;
 
 #[derive(Debug, Serialize)]
 pub struct GenericResponse {
@@ -12,14 +12,14 @@ impl GenericResponse {
     pub fn default() -> GenericResponse {
         GenericResponse {
             message: "".to_owned(),
-            ok: true
+            ok: true,
         }
     }
 
     pub fn new(message: &str) -> GenericResponse {
         GenericResponse {
             message: message.to_owned(),
-            ok: true
+            ok: true,
         }
     }
 

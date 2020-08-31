@@ -1,10 +1,9 @@
+use crate::models::api_key::ApiKey;
+use crate::models::response::GenericResponse;
+use crate::models::user::{PostUser, User};
+use crate::Database;
 use rocket::response::status;
 use rocket_contrib::json::Json;
-use crate::models::{
-    user::{PostUser, User},
-};
-use crate::models::response::GenericResponse;
-use crate::Database;
 
 /// # POST /users
 /// Creates a new user in the database
@@ -19,13 +18,16 @@ use crate::Database;
 /// }
 ///
 #[post("/users", data = "<user>")]
-pub fn post(conn: Database, user: Json<PostUser>) -> Result<Json<User>, status::BadRequest<Json<GenericResponse>>> {
+pub fn post(
+    conn: Database,
+    user: Json<PostUser>,
+) -> Result<Json<User>, status::BadRequest<Json<GenericResponse>>> {
     if let Err(e) = user.check_password_strength() {
         return Err(GenericResponse::new_bad_response(&e.to_string()));
     }
 
     match User::create_user(&*conn, &user.into_inner()) {
         Ok(user) => Ok(Json(user)),
-        Err(e) => Err(GenericResponse::new_bad_response(&e.to_string()))
+        Err(e) => Err(GenericResponse::new_bad_response(&e.to_string())),
     }
 }

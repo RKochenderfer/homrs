@@ -1,11 +1,11 @@
-use serde::{Serialize, Deserialize};
-use chrono::NaiveDateTime;
-use diesel::{RunQueryDsl, insert_into, PgConnection};
-use diesel::prelude::*;
+use crate::cust_error::{Error, Result};
+use crate::models::user::User;
 use crate::schema::sessions;
-use crate::cust_error::{Result, Error};
 use crate::schema::sessions::dsl::*;
-use crate::models::user::{User};
+use chrono::NaiveDateTime;
+use diesel::prelude::*;
+use diesel::{insert_into, PgConnection, RunQueryDsl};
+use serde::{Deserialize, Serialize};
 
 #[derive(Queryable, Serialize, Deserialize)]
 pub struct Session {
@@ -18,7 +18,8 @@ pub struct Session {
 impl Session {
     /// Checks to see if a user already has a logged in session
     pub fn check_exists(conn: &PgConnection, check_user_id: i32) -> Result<bool> {
-        let result: Vec<Session> = sessions.filter(user_id.eq(check_user_id))
+        let result: Vec<Session> = sessions
+            .filter(user_id.eq(check_user_id))
             .load::<Session>(conn)
             .expect("Error loading user");
 
@@ -30,7 +31,8 @@ impl Session {
     }
 
     pub fn get_by_token(conn: &PgConnection, session_token: &str) -> Result<Option<Session>> {
-        let mut result: Vec<Session> = sessions.filter(token.eq(session_token))
+        let mut result: Vec<Session> = sessions
+            .filter(token.eq(session_token))
             .load::<Session>(conn)
             .expect("Error loading user");
 
@@ -52,7 +54,10 @@ impl Session {
             last_action: chrono::Utc::now().naive_utc(),
         };
 
-        Ok(insert_into(sessions).values(insert).get_result(conn).expect("Failed to insert session."))
+        Ok(insert_into(sessions)
+            .values(insert)
+            .get_result(conn)
+            .expect("Failed to insert session."))
     }
 
     pub fn delete<'a>(conn: &PgConnection, session_id: i32) -> Result<()> {
@@ -61,7 +66,10 @@ impl Session {
         if deleted_count > 0 {
             Ok(())
         } else {
-            Err(Error::boxed(&format!("Session token {} not found", session_id)))
+            Err(Error::boxed(&format!(
+                "Session token {} not found",
+                session_id
+            )))
         }
     }
 }
@@ -88,16 +96,18 @@ impl<'a> PostSession<'a> {
     /// Handles posting a new session
     pub fn post_session(&self, conn: &PgConnection) -> Result<Session> {
         // Grab user with given email
-        if let Some(user) = User::get_by_email(conn,self.email)? {
+        if let Some(user) = User::get_by_email(conn, self.email)? {
             if Session::check_exists(conn, user.id)? {
-                return Err(Error::boxed("User is already logged in"))
+                return Err(Error::boxed("User is already logged in"));
             }
             match self.password_valid(&user) {
                 true => Ok(Session::create(conn, user.id)?),
-                false => Err(Error::boxed("Incorrect password"))
+                false => Err(Error::boxed("Incorrect password")),
             }
         } else {
-            Err(Error::boxed("Unable to create user session. User does not exist"))
+            Err(Error::boxed(
+                "Unable to create user session. User does not exist",
+            ))
         }
     }
 }

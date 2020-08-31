@@ -1,4 +1,4 @@
-pub mod user;
+pub mod api_key;
 pub mod response;
 pub mod session;
-pub mod api_key;
+pub mod user;

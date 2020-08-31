@@ -1,11 +1,11 @@
-use crate::cust_error::{Result, Error};
-use crate::schema::{users};
-use chrono::NaiveDateTime;
-use diesel::{RunQueryDsl, insert_into, PgConnection};
-use diesel::prelude::*;
-use argon2::{self, Config};
-use serde::{Deserialize, Serialize};
+use crate::cust_error::{Error, Result};
+use crate::schema::users;
 use crate::schema::users::dsl::*;
+use argon2::{self, Config};
+use chrono::NaiveDateTime;
+use diesel::prelude::*;
+use diesel::{insert_into, PgConnection, RunQueryDsl};
+use serde::{Deserialize, Serialize};
 
 /// Struct modeling a user in the database
 #[derive(Queryable, Serialize, Deserialize)]
@@ -39,19 +39,29 @@ impl User {
             updated_at: updated,
         };
 
-        Ok(insert_into(users).values(&insert).get_result(conn).expect("Failed to insert user."))
+        Ok(insert_into(users)
+            .values(&insert)
+            .get_result(conn)
+            .expect("Failed to insert user."))
     }
 
     /// Gets a user with the given user id
     pub fn get_by_id(conn: &PgConnection, user_id: i32) -> Result<User> {
-        let result = users.find(user_id).first(conn).expect("Error finding user.");
+        let result = users
+            .find(user_id)
+            .first(conn)
+            .expect("Error finding user.");
 
         Ok(result)
     }
 
     /// Gets a user with a given email
     pub fn get_by_email(conn: &PgConnection, user_email: &str) -> Result<Option<User>> {
-        let mut result: Vec<User> = users.filter(email.eq(user_email)).limit(1).load::<User>(conn).expect("Failed to load user.");
+        let mut result: Vec<User> = users
+            .filter(email.eq(user_email))
+            .limit(1)
+            .load::<User>(conn)
+            .expect("Failed to load user.");
 
         if result.len() > 0 {
             Ok(Some(result.pop().unwrap()))
@@ -94,7 +104,7 @@ impl<'a> PostUser<'a> {
     ///     * Has at least one upper case letter
     ///     * Has at least one number
     ///     * Has at least one special character
-    pub fn check_password_strength(&self) -> Result<()>{
+    pub fn check_password_strength(&self) -> Result<()> {
         let mut lowercase = false;
         let mut uppercase = false;
         let mut digit = false;
@@ -103,7 +113,9 @@ impl<'a> PostUser<'a> {
         let specials: &str = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
 
         if self.password.len() < 8 || self.password.len() > 20 {
-            return Err(Error::boxed("Password must between 8 and 20 characters long."));
+            return Err(Error::boxed(
+                "Password must between 8 and 20 characters long.",
+            ));
         }
 
         for c in self.password.chars() {
@@ -125,8 +137,10 @@ impl<'a> PostUser<'a> {
         if valid {
             Ok(())
         } else {
-            Err(Error::boxed("Password must have at least one lower case letter, \
-            one upper case letter, one number, and one special character"))
+            Err(Error::boxed(
+                "Password must have at least one lower case letter, \
+            one upper case letter, one number, and one special character",
+            ))
         }
     }
 }

@@ -6,16 +6,17 @@ extern crate rocket;
 extern crate rocket_contrib;
 #[macro_use]
 extern crate diesel;
-extern crate serde;
 extern crate argon2;
+extern crate serde;
 
+#[allow(unused_imports)]
+use diesel_migrations::embed_migrations;
 use rocket_contrib::databases;
-#[allow(unused_imports)] use diesel_migrations::embed_migrations;
 
-pub mod schema;
-mod routes;
 mod cust_error;
 mod models;
+mod routes;
+pub mod schema;
 
 #[database("pg_db")]
 pub struct Database(databases::diesel::PgConnection);
@@ -33,10 +34,13 @@ fn main() {
 
     rocket::ignite()
         .attach(Database::fairing())
-        .mount("/api", routes![
-            routes::users::post,
-            routes::sessions::post,
-            routes::sessions::delete,
-        ])
+        .mount(
+            "/api",
+            routes![
+                routes::users::post,
+                routes::sessions::post,
+                routes::sessions::delete,
+            ],
+        )
         .launch();
 }
