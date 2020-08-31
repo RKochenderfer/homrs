@@ -10,13 +10,15 @@ extern crate diesel;
 extern crate serde;
 extern crate argon2;
 
+use rocket_contrib::databases;
+
 pub mod schema;
 mod routes;
 mod cust_error;
 mod models;
 
 #[database("pg_db")]
-struct Database(rocket_contrib::databases::diesel::PgConnection);
+pub struct Database(databases::diesel::PgConnection);
 
 #[get("/")]
 fn index() -> &'static str {
@@ -24,8 +26,10 @@ fn index() -> &'static str {
 }
 
 fn main() {
+    dotenv::dotenv().ok();
+
     rocket::ignite()
         .attach(Database::fairing())
-        .mount("/api", routes![index])
+        .mount("/api", routes![routes::users::post])
         .launch();
 }

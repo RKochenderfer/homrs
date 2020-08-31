@@ -1,4 +1,3 @@
-use std::error;
 use std::fmt;
 use std::convert::TryFrom;
 use rocket::response::status;
@@ -18,6 +17,3 @@ impl Error {
         Box::try_from(error).unwrap()
     }
 }
-
-/// Error response for a post bad request to /users
-pub type BadRequestPostUser<'a> = status::BadRequest<Json<GenericResponse<'a>>>;

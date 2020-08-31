@@ -21,21 +21,26 @@ pub struct User {
 }
 
 impl User {
-    pub fn create_user(conn: &PgConnection, new_user: &PostUser) -> User {
+    /// Inserts a new user into the database
+    pub fn create_user(conn: &PgConnection, new_user: &PostUser) -> Result<User> {
         use crate::schema::users::dsl::*;
 
-        let salt = std::env::var("SALT").unwrap();
+        let salt = std::env::var("SALT")?;
         let config = Config::default();
-        let hash = argon2::hash_encoded(new_user.password.as_bytes(), salt.as_bytes(), &config).unwrap();
+        let hash = argon2::hash_encoded(new_user.password.as_bytes(), salt.as_bytes(), &config)?;
+        let created = chrono::Utc::now().naive_utc();
+        let updated = created.clone();
         let insert = InsertUser {
             email: new_user.email.to_owned(),
             first_name: new_user.first_name.to_owned(),
             last_name: new_user.last_name.to_owned(),
             password_hash: hash,
             user_role: new_user.user_role.to_owned(),
+            created_at: created,
+            updated_at: updated,
         };
 
-        insert_into(users).values(&insert).get_result(conn).unwrap()
+        Ok(insert_into(users).values(&insert).get_result(conn).expect("Failed to insert user."))
     }
 }
 
@@ -48,6 +53,8 @@ pub struct InsertUser {
     pub last_name: String,
     pub password_hash: String,
     pub user_role: String,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(Deserialize)]
