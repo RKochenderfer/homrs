@@ -11,6 +11,7 @@ extern crate serde;
 extern crate argon2;
 
 use rocket_contrib::databases;
+use diesel_migrations::embed_migrations;
 
 pub mod schema;
 mod routes;
@@ -27,6 +28,9 @@ fn index() -> &'static str {
 
 fn main() {
     dotenv::dotenv().ok();
+
+    #[cfg(not(debug_assertions))]
+    embed_migrations!();
 
     rocket::ignite()
         .attach(Database::fairing())
