@@ -9,6 +9,13 @@ pub struct GenericResponse {
 }
 
 impl GenericResponse {
+    pub fn default() -> GenericResponse {
+        GenericResponse {
+            message: "".to_owned(),
+            ok: true
+        }
+    }
+
     pub fn new(message: &str) -> GenericResponse {
         GenericResponse {
             message: message.to_owned(),

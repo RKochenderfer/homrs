@@ -17,15 +17,27 @@ pub struct Session {
 
 impl Session {
     /// Checks to see if a user already has a logged in session
-    fn check_exists(conn: &PgConnection, check_user_id: i32) -> bool {
+    pub fn check_exists(conn: &PgConnection, check_user_id: i32) -> Result<bool> {
         let result: Vec<Session> = sessions.filter(user_id.eq(check_user_id))
             .load::<Session>(conn)
             .expect("Error loading user");
 
         if result.len() > 0 {
-            true
+            Ok(true)
         } else {
-            false
+            Ok(false)
+        }
+    }
+
+    pub fn get_by_token(conn: &PgConnection, session_token: &str) -> Result<Option<Session>> {
+        let mut result: Vec<Session> = sessions.filter(token.eq(session_token))
+            .load::<Session>(conn)
+            .expect("Error loading user");
+
+        if result.len() > 0 {
+            Ok(Some(result.pop().unwrap()))
+        } else {
+            Ok(None)
         }
     }
 
@@ -43,13 +55,13 @@ impl Session {
         Ok(insert_into(sessions).values(insert).get_result(conn).expect("Failed to insert session."))
     }
 
-    pub fn destroy<'a>(conn: &PgConnection, session_token: &'a str) -> Result<&'a str> {
-        let deleted_count = diesel::delete(sessions.filter(token.eq(session_token))).execute(conn)?;
+    pub fn delete<'a>(conn: &PgConnection, session_id: i32) -> Result<()> {
+        let deleted_count = diesel::delete(sessions.filter(id.eq(session_id))).execute(conn)?;
 
         if deleted_count > 0 {
-            Ok(session_token)
+            Ok(())
         } else {
-            Err(Error::boxed(&format!("Session token {} not found", session_token)))
+            Err(Error::boxed(&format!("Session token {} not found", session_id)))
         }
     }
 }
@@ -77,7 +89,7 @@ impl<'a> PostSession<'a> {
     pub fn post_session(&self, conn: &PgConnection) -> Result<Session> {
         // Grab user with given email
         if let Some(user) = User::get_by_email(conn,self.email)? {
-            if Session::check_exists(conn, user.id) {
+            if Session::check_exists(conn, user.id)? {
                 return Err(Error::boxed("User is already logged in"))
             }
             match self.password_valid(&user) {
@@ -87,16 +99,5 @@ impl<'a> PostSession<'a> {
         } else {
             Err(Error::boxed("Unable to create user session. User does not exist"))
         }
-    }
-}
-
-#[derive(Deserialize)]
-pub struct DeleteSession<'a> {
-    pub session_token: &'a str,
-}
-
-impl<'a> DeleteSession<'a> {
-    pub fn delete_session(&self, conn: &PgConnection) -> Result<&str> {
-        Session::destroy(conn, self.session_token)
     }
 }
