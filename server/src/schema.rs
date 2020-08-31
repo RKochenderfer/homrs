@@ -3,6 +3,7 @@ table! {
         id -> Int4,
         user_id -> Int4,
         token -> Varchar,
+        last_action -> Timestamp,
     }
 }
 

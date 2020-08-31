@@ -6,7 +6,6 @@ use diesel::prelude::*;
 use argon2::{self, Config};
 use serde::{Deserialize, Serialize};
 use crate::schema::users::dsl::*;
-// use crate::db::PgPooledConnection;
 
 /// Struct modeling a user in the database
 #[derive(Queryable, Serialize, Deserialize)]
@@ -51,13 +50,14 @@ impl User {
     }
 
     /// Gets a user with a given email
-    pub fn get_by_email(conn: &PgConnection, user_email: &str) -> Result<User> {
+    pub fn get_by_email(conn: &PgConnection, user_email: &str) -> Result<Option<User>> {
         let mut result: Vec<User> = users.filter(email.eq(user_email)).limit(1).load::<User>(conn).expect("Failed to load user.");
 
         if result.len() > 0 {
-            Ok(result.pop().unwrap())
+            Ok(Some(result.pop().unwrap()))
         } else {
-            Err(Error::boxed(&format!("Could not find user with email: {}", user_email)))
+            // Err(Error::boxed(&format!("Could not find user with email: {}", user_email)))
+            Ok(None)
         }
     }
 }

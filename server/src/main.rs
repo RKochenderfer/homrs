@@ -6,12 +6,11 @@ extern crate rocket;
 extern crate rocket_contrib;
 #[macro_use]
 extern crate diesel;
-#[macro_use]
 extern crate serde;
 extern crate argon2;
 
 use rocket_contrib::databases;
-use diesel_migrations::embed_migrations;
+#[allow(unused_imports)] use diesel_migrations::embed_migrations;
 
 pub mod schema;
 mod routes;
@@ -34,6 +33,9 @@ fn main() {
 
     rocket::ignite()
         .attach(Database::fairing())
-        .mount("/api", routes![routes::users::post])
+        .mount("/api", routes![
+            routes::users::post,
+            routes::sessions::post,
+        ])
         .launch();
 }

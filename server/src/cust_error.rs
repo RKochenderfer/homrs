@@ -1,8 +1,4 @@
-use std::fmt;
 use std::convert::TryFrom;
-use rocket::response::status;
-use crate::models::response::GenericResponse;
-use rocket_contrib::json::Json;
 
 type BoxedError = Box<dyn std::error::Error + Send + Sync>;
 
