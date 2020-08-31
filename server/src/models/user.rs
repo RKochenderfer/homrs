@@ -2,8 +2,10 @@ use crate::cust_error::{Result, Error};
 use crate::schema::{users};
 use chrono::NaiveDateTime;
 use diesel::{RunQueryDsl, insert_into, PgConnection};
+use diesel::prelude::*;
 use argon2::{self, Config};
 use serde::{Deserialize, Serialize};
+use crate::schema::users::dsl::*;
 // use crate::db::PgPooledConnection;
 
 /// Struct modeling a user in the database
@@ -23,8 +25,6 @@ pub struct User {
 impl User {
     /// Inserts a new user into the database
     pub fn create_user(conn: &PgConnection, new_user: &PostUser) -> Result<User> {
-        use crate::schema::users::dsl::*;
-
         let salt = std::env::var("SALT")?;
         let config = Config::default();
         let hash = argon2::hash_encoded(new_user.password.as_bytes(), salt.as_bytes(), &config)?;
@@ -41,6 +41,24 @@ impl User {
         };
 
         Ok(insert_into(users).values(&insert).get_result(conn).expect("Failed to insert user."))
+    }
+
+    /// Gets a user with the given user id
+    pub fn get_by_id(conn: &PgConnection, user_id: i32) -> Result<User> {
+        let result = users.find(user_id).first(conn).expect("Error finding user.");
+
+        Ok(result)
+    }
+
+    /// Gets a user with a given email
+    pub fn get_by_email(conn: &PgConnection, user_email: &str) -> Result<User> {
+        let mut result: Vec<User> = users.filter(email.eq(user_email)).limit(1).load::<User>(conn).expect("Failed to load user.");
+
+        if result.len() > 0 {
+            Ok(result.pop().unwrap())
+        } else {
+            Err(Error::boxed(&format!("Could not find user with email: {}", user_email)))
+        }
     }
 }
 
