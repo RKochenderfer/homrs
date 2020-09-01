@@ -1,12 +1,12 @@
 use crate::cust_error::{Error, Result};
+use crate::models::session::{Session};
 use crate::schema::users;
 use crate::schema::users::dsl::*;
-use crate::models::session::Session;
 use argon2::{self, Config};
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
-use diesel::{insert_into, PgConnection, RunQueryDsl};
 use diesel::query_dsl::SaveChangesDsl;
+use diesel::{insert_into, PgConnection, RunQueryDsl};
 use serde::{Deserialize, Serialize};
 
 /// Struct modeling a user in the database
@@ -96,15 +96,40 @@ impl User {
         let mut new_last_name = user.last_name;
         let mut new_user_role = user.user_role;
 
-        if let Some(x) = put_user.email { new_email = x.to_owned() }
-        if let Some(x) = put_user.first_name { new_first_name = x.to_owned() }
-        if let Some(x) = put_user.last_name { new_last_name = x.to_owned() }
-        if let Some(x) = put_user.user_role { new_user_role = x.to_owned() }
+        if let Some(x) = put_user.email {
+            new_email = x.to_owned()
+        }
+        if let Some(x) = put_user.first_name {
+            new_first_name = x.to_owned()
+        }
+        if let Some(x) = put_user.last_name {
+            new_last_name = x.to_owned()
+        }
+        if let Some(x) = put_user.user_role {
+            new_user_role = x.to_owned()
+        }
 
-
-        let updated = UpdateUser::new(user.id, new_email, new_first_name, new_last_name, new_user_role);
+        let updated = UpdateUser::new(
+            user.id,
+            new_email,
+            new_first_name,
+            new_last_name,
+            new_user_role,
+        );
 
         Ok(updated.save_changes(conn)?)
+    }
+
+    pub fn update_password(conn: &PgConnection, password: &str, user_id: i32) -> Result<()>{
+        let salt = std::env::var("SALT")?;
+        let config = Config::default();
+        let hash = argon2::hash_encoded(password.as_bytes(), salt.as_bytes(), &config)?;
+
+        let updated = UpdateUserPassword::new(user_id, &hash);
+
+        let _ = updated.save_changes::<User>(conn).expect("Failed to update password.");
+
+        Ok(())
     }
 }
 
@@ -193,7 +218,13 @@ pub struct UpdateUser {
 }
 
 impl UpdateUser {
-    pub fn new(user_id: i32, new_email: String, new_first_name: String, new_last_name: String, new_user_role: String) -> UpdateUser {
+    pub fn new(
+        user_id: i32,
+        new_email: String,
+        new_first_name: String,
+        new_last_name: String,
+        new_user_role: String,
+    ) -> UpdateUser {
         UpdateUser {
             id: user_id,
             email: new_email,
@@ -211,4 +242,27 @@ pub struct PutUser<'a> {
     pub first_name: Option<&'a str>,
     pub last_name: Option<&'a str>,
     pub user_role: Option<&'a str>,
+}
+
+#[derive(AsChangeset, Identifiable)]
+#[table_name = "users"]
+pub struct UpdateUserPassword {
+    pub id: i32,
+    pub password_hash: String,
+    pub updated_at: NaiveDateTime,
+}
+
+impl UpdateUserPassword {
+    pub fn new(user_id: i32, new_hash: &str) -> UpdateUserPassword {
+        UpdateUserPassword {
+            id: user_id,
+            password_hash: new_hash.to_owned(),
+            updated_at: chrono::Utc::now().naive_utc(),
+        }
+    }
+}
+
+#[derive(Deserialize)]
+pub struct ChangePassword<'a> {
+    pub password: &'a str,
 }

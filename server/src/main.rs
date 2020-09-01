@@ -40,6 +40,7 @@ fn main() {
                 routes::users::post,
                 routes::users::put,
                 routes::users::delete,
+                routes::users::change_password,
                 routes::sessions::post,
                 routes::sessions::delete,
             ],

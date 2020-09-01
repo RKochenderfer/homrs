@@ -8,7 +8,7 @@ use crate::Database;
 #[derive(Debug)]
 pub struct ApiKey {
     pub user_id: i32,
-    pub session_token: String
+    pub session_token: String,
 }
 
 #[derive(Debug)]
@@ -24,7 +24,7 @@ impl ApiKey {
     pub fn new(user_id: i32, session_token: String) -> Self {
         ApiKey {
             user_id,
-            session_token
+            session_token,
         }
     }
 }
