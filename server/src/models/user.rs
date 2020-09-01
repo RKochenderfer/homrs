@@ -1,10 +1,12 @@
 use crate::cust_error::{Error, Result};
 use crate::schema::users;
 use crate::schema::users::dsl::*;
+use crate::models::session::Session;
 use argon2::{self, Config};
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use diesel::{insert_into, PgConnection, RunQueryDsl};
+use diesel::query_dsl::SaveChangesDsl;
 use serde::{Deserialize, Serialize};
 
 /// Struct modeling a user in the database
@@ -23,7 +25,7 @@ pub struct User {
 
 impl User {
     /// Inserts a new user into the database
-    pub fn create_user(conn: &PgConnection, new_user: &PostUser) -> Result<User> {
+    pub fn create(conn: &PgConnection, new_user: &PostUser) -> Result<User> {
         let salt = std::env::var("SALT")?;
         let config = Config::default();
         let hash = argon2::hash_encoded(new_user.password.as_bytes(), salt.as_bytes(), &config)?;
@@ -69,6 +71,40 @@ impl User {
             // Err(Error::boxed(&format!("Could not find user with email: {}", user_email)))
             Ok(None)
         }
+    }
+
+    /// delete user
+    pub fn delete(conn: &PgConnection, user_id: i32, session_token: String) -> Result<()> {
+        // Delete from sessions table
+        let session = Session::get_by_token(conn, &session_token)?;
+        Session::delete(conn, session.unwrap().id)?;
+        // Delete user from table
+        let deleted_count = diesel::delete(users.filter(id.eq(user_id))).execute(conn)?;
+
+        if deleted_count > 0 {
+            Ok(())
+        } else {
+            Err(Error::boxed(&format!("User id {} not found", user_id)))
+        }
+    }
+
+    /// Updates a user's information except for password
+    pub fn update(conn: &PgConnection, put_user: PutUser, user_id: i32) -> Result<User> {
+        let user = User::get_by_id(conn, user_id)?;
+        let mut new_email = user.email;
+        let mut new_first_name = user.first_name;
+        let mut new_last_name = user.last_name;
+        let mut new_user_role = user.user_role;
+
+        if let Some(x) = put_user.email { new_email = x.to_owned() }
+        if let Some(x) = put_user.first_name { new_first_name = x.to_owned() }
+        if let Some(x) = put_user.last_name { new_last_name = x.to_owned() }
+        if let Some(x) = put_user.user_role { new_user_role = x.to_owned() }
+
+
+        let updated = UpdateUser::new(user.id, new_email, new_first_name, new_last_name, new_user_role);
+
+        Ok(updated.save_changes(conn)?)
     }
 }
 
@@ -143,4 +179,36 @@ impl<'a> PostUser<'a> {
             ))
         }
     }
+}
+
+#[derive(AsChangeset, Identifiable)]
+#[table_name = "users"]
+pub struct UpdateUser {
+    pub id: i32,
+    pub email: String,
+    pub first_name: String,
+    pub last_name: String,
+    pub user_role: String,
+    pub updated_at: NaiveDateTime,
+}
+
+impl UpdateUser {
+    pub fn new(user_id: i32, new_email: String, new_first_name: String, new_last_name: String, new_user_role: String) -> UpdateUser {
+        UpdateUser {
+            id: user_id,
+            email: new_email,
+            first_name: new_first_name,
+            last_name: new_last_name,
+            user_role: new_user_role,
+            updated_at: chrono::Utc::now().naive_utc(),
+        }
+    }
+}
+
+#[derive(Deserialize)]
+pub struct PutUser<'a> {
+    pub email: Option<&'a str>,
+    pub first_name: Option<&'a str>,
+    pub last_name: Option<&'a str>,
+    pub user_role: Option<&'a str>,
 }

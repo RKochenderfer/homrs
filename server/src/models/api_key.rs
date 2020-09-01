@@ -3,12 +3,12 @@ use rocket::request::{self, FromRequest, Request};
 use rocket::Outcome;
 
 use crate::models::session::Session;
-use crate::schema::sessions::dsl::sessions;
 use crate::Database;
 
 #[derive(Debug)]
 pub struct ApiKey {
     pub user_id: i32,
+    pub session_token: String
 }
 
 #[derive(Debug)]
@@ -21,8 +21,11 @@ pub enum ApiKeyError {
 }
 
 impl ApiKey {
-    pub fn new(user_id: i32) -> Self {
-        ApiKey { user_id }
+    pub fn new(user_id: i32, session_token: String) -> Self {
+        ApiKey {
+            user_id,
+            session_token
+        }
     }
 }
 
@@ -44,7 +47,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for ApiKey {
         // Gets the session by the token
         match Session::get_by_token(&db.0, &token.0) {
             Ok(x) => match x {
-                Some(s) => Outcome::Success(ApiKey::new(s.user_id)),
+                Some(s) => Outcome::Success(ApiKey::new(s.user_id, token.0)),
                 None => Outcome::Failure((Status::BadRequest, ApiKeyError::Missing)),
             },
             Err(_) => Outcome::Failure((Status::InternalServerError, ApiKeyError::DatabaseError)),

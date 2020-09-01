@@ -38,6 +38,8 @@ fn main() {
             "/api",
             routes![
                 routes::users::post,
+                routes::users::put,
+                routes::users::delete,
                 routes::sessions::post,
                 routes::sessions::delete,
             ],

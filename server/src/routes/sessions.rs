@@ -44,7 +44,7 @@ pub fn delete(
     user_logout_key: LogoutKey,
 ) -> Result<Json<GenericResponse>, status::BadRequest<Json<GenericResponse>>> {
     match Session::delete(&*conn, user_logout_key.session_id) {
-        Ok(t) => Ok(Json(GenericResponse::default())),
+        Ok(_) => Ok(Json(GenericResponse::default())),
         Err(e) => Err(GenericResponse::new_bad_response(&e.to_string())),
     }
 }
