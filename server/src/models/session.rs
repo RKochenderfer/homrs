@@ -88,26 +88,31 @@ pub struct PostSession<'a> {
     pub password: &'a str,
 }
 
+pub enum LoginStatus {
+    LoggedIn(Session),
+    AlreadyLoggedIn,
+    IncorrectPassword,
+    UserDoesNotExist,
+}
+
 impl<'a> PostSession<'a> {
     fn password_valid(&self, user: &User) -> bool {
         argon2::verify_encoded(&user.password_hash, self.password.as_bytes()).unwrap()
     }
 
     /// Handles posting a new session
-    pub fn post_session(&self, conn: &PgConnection) -> Result<Session> {
+    pub fn post_session(&self, conn: &PgConnection) -> Result<LoginStatus> {
         // Grab user with given email
         if let Some(user) = User::get_by_email(conn, self.email)? {
             if Session::check_exists(conn, user.id)? {
-                return Err(Error::boxed("User is already logged in"));
+                return Ok(LoginStatus::AlreadyLoggedIn);
             }
             match self.password_valid(&user) {
-                true => Ok(Session::create(conn, user.id)?),
-                false => Err(Error::boxed("Incorrect password")),
+                true => Ok(LoginStatus::LoggedIn(Session::create(conn, user.id)?)),
+                false => Ok(LoginStatus::IncorrectPassword),
             }
         } else {
-            Err(Error::boxed(
-                "Unable to create user session. User does not exist",
-            ))
+            Ok(LoginStatus::UserDoesNotExist)
         }
     }
 }

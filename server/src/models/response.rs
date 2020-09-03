@@ -32,3 +32,20 @@ impl GenericResponse {
         return status::BadRequest(Some(Json(gr)));
     }
 }
+
+#[derive(Debug, Serialize)]
+pub struct LoginResponse {
+    pub is_new_session: bool,
+    pub does_session_exists: bool,
+    pub password_is_incorrect: bool,
+}
+
+impl LoginResponse {
+    pub fn new(is_new_session: bool, does_session_exists: bool, password_is_incorrect: bool) -> LoginResponse {
+        LoginResponse {
+            is_new_session,
+            does_session_exists,
+            password_is_incorrect,
+        }
+    }
+}
