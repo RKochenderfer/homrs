@@ -17,16 +17,16 @@ pub struct Session {
 
 impl Session {
     /// Checks to see if a user already has a logged in session
-    pub fn check_exists(conn: &PgConnection, check_user_id: i32) -> Result<bool> {
-        let result: Vec<Session> = sessions
+    pub fn check_exists(conn: &PgConnection, check_user_id: i32) -> Result<Option<Session>> {
+        let mut result: Vec<Session> = sessions
             .filter(user_id.eq(check_user_id))
             .load::<Session>(conn)
             .expect("Error loading user");
 
         if result.len() > 0 {
-            Ok(true)
+            Ok(result.pop())
         } else {
-            Ok(false)
+            Ok(None)
         }
     }
 
@@ -72,6 +72,24 @@ impl Session {
             )))
         }
     }
+
+    /// Updates a session's last_action with a new timestamp
+    pub fn update_last_action(&self, conn: &PgConnection, timestamp: NaiveDateTime) -> Result<()> {
+        diesel::update(sessions.filter(id.eq(self.id)))
+            .set(last_action.eq(timestamp))
+            .execute(conn)?;
+
+        Ok(())
+    }
+}
+
+#[derive(AsChangeset, Identifiable)]
+#[table_name = "sessions"]
+pub struct UpdateSession {
+    id: i32,
+    user_id: i32,
+    token: String,
+    pub last_action: NaiveDateTime,
 }
 
 #[derive(Insertable)]
@@ -90,7 +108,7 @@ pub struct PostSession<'a> {
 
 pub enum LoginStatus {
     LoggedIn(Session),
-    AlreadyLoggedIn,
+    AlreadyLoggedIn(Session),
     IncorrectPassword,
     UserDoesNotExist,
 }
@@ -104,9 +122,13 @@ impl<'a> PostSession<'a> {
     pub fn post_session(&self, conn: &PgConnection) -> Result<LoginStatus> {
         // Grab user with given email
         if let Some(user) = User::get_by_email(conn, self.email)? {
-            if Session::check_exists(conn, user.id)? {
-                return Ok(LoginStatus::AlreadyLoggedIn);
+            if let Some(found) = Session::check_exists(conn, user.id)? {
+                return Ok(LoginStatus::AlreadyLoggedIn(found))
             }
+            // if let found = Session::check_exists(conn, user.id)? {
+            //
+            //     return Ok(LoginStatus::AlreadyLoggedIn);
+            // }
             match self.password_valid(&user) {
                 true => Ok(LoginStatus::LoggedIn(Session::create(conn, user.id)?)),
                 false => Ok(LoginStatus::IncorrectPassword),

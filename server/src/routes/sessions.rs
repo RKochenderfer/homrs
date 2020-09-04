@@ -7,6 +7,15 @@ use rocket::http::{Cookie, Cookies};
 use rocket::response::status;
 use rocket_contrib::json::Json;
 
+fn add_private_cookie(session: &Session, mut cookies: Cookies) {
+    let env = Environment::active().unwrap();
+    let cookie = Cookie::build("session-token", session.token.clone())
+        .secure(!env.is_dev())
+        .finish();
+    // Add cookie to browser
+    cookies.add_private(cookie);
+}
+
 /// # POST /sessions
 /// Creates a new session in the database
 ///
@@ -20,7 +29,7 @@ use rocket_contrib::json::Json;
 pub fn post(
     conn: Database,
     post_session: Json<PostSession>,
-    mut cookies: Cookies,
+    cookies: Cookies,
 ) -> Result<Json<LoginResponse>, status::BadRequest<Json<GenericResponse>>> {
     let status = post_session.post_session(&*conn);
 
@@ -30,15 +39,11 @@ pub fn post(
 
     match status.unwrap() {
         LoginStatus::LoggedIn(s) => {
-            let env = Environment::active().unwrap();
-            let cookie = Cookie::build("session-token", s.token)
-                .secure(!env.is_dev())
-                .finish();
-            // Add cookie to browser
-            cookies.add_private(cookie);
+            add_private_cookie(&s, cookies);
             Ok(Json(LoginResponse::new(true, false, false)))
         },
-        LoginStatus::AlreadyLoggedIn => {
+        LoginStatus::AlreadyLoggedIn(s) => {
+            add_private_cookie(&s, cookies);
             Ok(Json(LoginResponse::new(false, true, false)))
         },
         LoginStatus::IncorrectPassword => {
@@ -46,18 +51,6 @@ pub fn post(
         },
         LoginStatus::UserDoesNotExist => {Err(GenericResponse::new_bad_response("User does not exist."))},
     }
-    // match post_session.post_session(&*conn) {
-    //     Ok(s) => {
-    //         let env = Environment::active().unwrap();
-    //         let cookie = Cookie::build("session-token", s.token)
-    //             .secure(!env.is_dev())
-    //             .finish();
-    //         // Add cookie to browser
-    //         cookies.add_private(cookie);
-    //         Ok(Json(GenericResponse::default()))
-    //     }
-    //     Err(e) => Err(GenericResponse::new_bad_response(&e.to_string())),
-    // }
 }
 
 /// # DELETE /sessions

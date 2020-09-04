@@ -18,6 +18,7 @@ pub enum ApiKeyError {
     Missing,
     BadCount,
     DatabaseError,
+    Expired,
 }
 
 impl ApiKey {
@@ -31,7 +32,6 @@ impl ApiKey {
 
 impl<'a, 'r> FromRequest<'a, 'r> for ApiKey {
     type Error = ApiKeyError;
-
     fn from_request(request: &'a Request<'r>) -> request::Outcome<Self, Self::Error> {
         // Get session token
         struct Token(String);
@@ -47,7 +47,26 @@ impl<'a, 'r> FromRequest<'a, 'r> for ApiKey {
         // Gets the session by the token
         match Session::get_by_token(&db.0, &token.0) {
             Ok(x) => match x {
-                Some(s) => Outcome::Success(ApiKey::new(s.user_id, token.0)),
+                Some(s) => {
+                    let now = chrono::Utc::now().naive_utc();
+                    // Check if 7 days has passed since last action
+                    if now.signed_duration_since(s.last_action).num_days() > 7 {
+                        // Delete session
+                        if let Err(_) = Session::delete(&db.0, s.id) {
+                            Outcome::Failure((Status::InternalServerError, ApiKeyError::DatabaseError))
+                        } else {
+                            // The session token has expired and should be deleted
+                            Outcome::Failure((Status::BadRequest, ApiKeyError::Expired))
+                        }
+                    } else {
+                        // Update last used time
+                        if let Err(_) = s.update_last_action(&db.0, now) {
+                            Outcome::Failure((Status::InternalServerError, ApiKeyError::DatabaseError))
+                        } else {
+                            Outcome::Success(ApiKey::new(s.user_id, token.0))
+                        }
+                    }
+                },
                 None => Outcome::Failure((Status::BadRequest, ApiKeyError::Missing)),
             },
             Err(_) => Outcome::Failure((Status::InternalServerError, ApiKeyError::DatabaseError)),
