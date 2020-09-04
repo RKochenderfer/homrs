@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Button, Container, Alert, Form, FormGroup, Input, Label} from 'reactstrap'
+import {Button, Container, Alert, Form, FormGroup, Input, Label, Row, Col} from 'reactstrap'
 
 export default class Login extends Component {
 	constructor(props) {
@@ -51,22 +51,26 @@ export default class Login extends Component {
 
 	render() {
 		return (
-			<Container className="text-left">
-				<Form id="loginForm" onSubmit={e => this.login(e)}>
-					<FormGroup>
-						<Label for="email">Email</Label>
-						<Input type="email" name="email" id="email" placeholder="Enter Email"/>
-						{/*{this.EmailValidationError}*/}
-					</FormGroup>
-					<FormGroup>
-						<Label for="password">Password</Label>
-						<Input type="password" name="password" id="password" placeholder="Enter password"/>
-					</FormGroup>
-					<Alert color="warning" isOpen={this.state.generalErrorPresent}>
-						{this.state.generalErrorMessage}
-					</Alert>
-					<Button>Login</Button>
-				</Form>
+			<Container className="h-100">
+				<div className="h-100 row justify-content-center align-items-center">
+					<div className="col-12">
+						<Form id="loginForm" onSubmit={e => this.login(e)}>
+							<FormGroup>
+								<Label for="email">Email</Label>
+								<Input type="email" name="email" id="email" placeholder="Enter Email"/>
+								{/*{this.EmailValidationError}*/}
+							</FormGroup>
+							<FormGroup>
+								<Label for="password">Password</Label>
+								<Input type="password" name="password" id="password" placeholder="Enter password"/>
+							</FormGroup>
+							<Alert color="warning" isOpen={this.state.generalErrorPresent}>
+								{this.state.generalErrorMessage}
+							</Alert>
+							<Button>Login</Button>
+						</Form>
+					</div>
+				</div>
 			</Container>
 		)
 	}
