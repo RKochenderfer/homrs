@@ -40,14 +40,14 @@ pub fn post(
     match status.unwrap() {
         LoginStatus::LoggedIn(s) => {
             add_private_cookie(&s, cookies);
-            Ok(Json(LoginResponse::new(true, false, false)))
+            Ok(Json(LoginResponse::new(true, false)))
         },
         LoginStatus::AlreadyLoggedIn(s) => {
             add_private_cookie(&s, cookies);
-            Ok(Json(LoginResponse::new(false, true, false)))
+            Ok(Json(LoginResponse::new(true,false)))
         },
         LoginStatus::IncorrectPassword => {
-            Ok(Json(LoginResponse::new(false, false, true)))
+            Ok(Json(LoginResponse::new(false,true)))
         },
         LoginStatus::UserDoesNotExist => {Err(GenericResponse::new_bad_response("User does not exist."))},
     }
