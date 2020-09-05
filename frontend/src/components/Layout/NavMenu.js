@@ -38,6 +38,9 @@ const NavMenu = (props) => {
 						<NavLink href="/meals">Meals</NavLink>
 					</NavItem>
 					<NavItem>
+						<NavLink href="/intercom">Intercom</NavLink>
+					</NavItem>
+					<NavItem>
 						<NavLink href="/" onClick={logout}>Log out</NavLink>
 					</NavItem>
 				</Nav>
