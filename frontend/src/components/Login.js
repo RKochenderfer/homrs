@@ -1,19 +1,17 @@
 import React, {useState} from 'react'
 import {Link, Redirect} from 'react-router-dom'
 import {
-	Card,
-	CardHeader,
-	CardFooter,
-	CardBody,
-	Button,
-	Container,
 	Alert,
+	Button,
+	Card,
+	CardBody,
+	CardFooter,
+	CardHeader,
+	Container,
 	Form,
 	FormGroup,
 	Input,
-	Label,
-	Row,
-	Col
+	Label
 } from 'reactstrap'
 
 import '../Login.css'
@@ -30,15 +28,13 @@ function Login() {
 	async function makeRequest() {
 		let body = JSON.stringify({"email": email, "password": password})
 
-		const response = await fetch('/api/login', {
+		return await fetch('/api/login', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
 			},
 			body: body
 		})
-
-		return response
 	}
 
 	if (isLoggedIn) {
@@ -48,7 +44,6 @@ function Login() {
 	function login() {
 		makeRequest()
 			.then(res => {
-				console.log(res)
 				if (res.status === 200) {
 					res.json().then(body => {
 						if (body.logged_in === true) {
@@ -63,7 +58,7 @@ function Login() {
 				}
 			})
 			.catch(e => {
-				console.log(e)
+				console.error(e)
 				setIsError(true)
 				setAuthValid(false)
 				setErrorMsg('There was an error logging you in')
