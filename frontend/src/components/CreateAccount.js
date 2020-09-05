@@ -1,23 +1,23 @@
 import React, {useState} from 'react'
 import {
-	Card,
-	CardHeader,
-	CardFooter,
-	CardBody,
+	Alert,
 	Button,
+	Card,
+	CardBody,
+	CardFooter,
+	CardHeader,
+	Col,
 	Container,
 	Form,
 	FormGroup,
 	Input,
 	Label,
-	Row,
-	Col,
-	Alert
+	Row
 } from 'reactstrap'
 import {Link, Redirect} from "react-router-dom";
 import {useAuth} from "../context/auth";
 
-function CreateAccount(props) {
+function CreateAccount() {
 	const [isLoggedIn, setLoggedIn] = useState(false)
 	const [firstName, setFirstName] = useState('')
 	const [lastName, setLastName] = useState('')
@@ -25,9 +25,9 @@ function CreateAccount(props) {
 	const [password, setPassword] = useState('')
 	const [isError, setIsError] = useState(false)
 	const [errorMsg, setErrorMsg] = useState('')
-	const {setAuth} = useAuth()
+	const {setAuthValid} = useAuth()
 
-	async function makeRequest() {
+	async function makeCreateRequest() {
 		// TODO: ONCE ROLES ARE ESTABLISHED UPDATE USR
 		let body = JSON.stringify(
 			{
@@ -38,30 +38,62 @@ function CreateAccount(props) {
 				'user_role': 'USR',
 			}
 		)
-		const response = await fetch('/api/users', {
+		return await fetch('/api/users', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
 			},
 			body: body
 		})
-
-		return response
 	}
 
-	function createAccount() {
-		makeRequest()
+	async function makeLoginRequest() {
+		let body = JSON.stringify({"email": email, "password": password})
+
+		return await fetch('/api/login', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: body
+		})
+	}
+
+	function login() {
+		makeLoginRequest()
 			.then(res => {
-				console.log(res)
 				if (res.status === 200) {
 					res.json().then(body => {
-						setAuth(true)
-						setLoggedIn(true)
+						if (body.logged_in === true) {
+							setAuthValid(true)
+							setLoggedIn(true)
+						} else {
+							setIsError(true)
+							setAuthValid(false)
+							setErrorMsg('Email or password is incorrect.')
+						}
 					})
 				}
 			})
 			.catch(e => {
-				setAuth(false)
+				console.error(e)
+				setIsError(true)
+				setAuthValid(false)
+				setErrorMsg('There was an error logging you in')
+			})
+	}
+
+	function createAccount() {
+		makeCreateRequest()
+			.then(res => {
+				console.log(res)
+				if (res.status === 200) {
+					res.json().then(_body => login)
+				}
+			})
+			.catch(e => {
+				console.error(e)
+				setAuthValid(false)
 				setLoggedIn(false)
 				setIsError(true)
 				setErrorMsg('Something went wrong creating your account')
