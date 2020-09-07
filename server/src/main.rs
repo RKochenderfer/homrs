@@ -42,6 +42,7 @@ fn main() {
                 routes::users::delete,
                 routes::users::change_password,
                 routes::sessions::post,
+                routes::sessions::status,
                 routes::sessions::delete,
             ],
         )

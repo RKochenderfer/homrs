@@ -12,11 +12,23 @@ import Intercom from "./components/Intercom";
 import CreateAccount from "./components/CreateAccount";
 
 function App() {
-	const existingSession = document.cookie.match(/^(.*;)?\s*session-token\s*=\s*[^;]+(.*)?$/) === undefined
-	const [authValid, setAuthValid] = useState(existingSession)
+	const [authValid, setAuthValid] = useState(false)
 
 	const setAuthConfirmed = valid => {
-		setAuthValid(valid)
+		if (valid !== undefined) {
+			setAuthValid(valid)
+		} else {
+			fetch('/api/sessions/status', {
+				method: 'GET'
+			})
+				.then(res => {
+					setAuthValid(res.ok)
+				})
+				.catch(e => {
+					setAuthValid(false)
+					console.error(e)
+				})
+		}
 	}
 
 	return (
@@ -27,10 +39,10 @@ function App() {
 					<Switch>
 						<Route exact path="/" render={(props) => <Login {...props} />}/>
 						<Route exact path="/signup" component={CreateAccount} />
-						<Route exact path="/home" render={props => <Layout><Home {...props}/></Layout>} />
-						<PrivateRoute path="/meals" render={props => <Layout><Meals {...props}/></Layout>} />
-						<PrivateRoute path="/intercom" render={props => <Layout><Intercom {...props}/></Layout>} />
-						<PrivateRoute path="/admin" render={props => <Layout><Admin {...props}/></Layout>} />
+						<PrivateRoute exact path="/home" component={Home} />
+						<PrivateRoute path="/meals" component={Meals} />
+						<PrivateRoute path="/intercom" component={Intercom} />
+						<PrivateRoute path="/admin" component={Admin} />
 					</Switch>
 				</BrowserRouter>
 			</AuthContext.Provider>

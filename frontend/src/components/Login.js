@@ -15,6 +15,7 @@ import {
 } from 'reactstrap'
 
 import '../Login.css'
+import {login} from "./Shared/Login";
 import {useAuth} from "../context/auth";
 
 function Login() {
@@ -25,43 +26,18 @@ function Login() {
 	const [password, setPassword] = useState('')
 	const {setAuthValid} = useAuth()
 
-	async function makeRequest() {
-		let body = JSON.stringify({"email": email, "password": password})
-
-		return await fetch('/api/login', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: body
-		})
-	}
-
 	if (isLoggedIn) {
 		return <Redirect to="/home"/>
 	}
 
-	function login() {
-		makeRequest()
-			.then(res => {
-				if (res.status === 200) {
-					res.json().then(body => {
-						if (body.logged_in === true) {
-							setAuthValid(true)
-							setLoggedIn(true)
-						} else {
-							setIsError(true)
-							setAuthValid(false)
-							setErrorMsg('Email or password is incorrect.')
-						}
-					})
-				}
+	function handleLogin() {
+		login(email, password)
+			.then(x => {
+				setAuthValid(true)
+				setLoggedIn(x)
 			})
 			.catch(e => {
 				console.error(e)
-				setIsError(true)
-				setAuthValid(false)
-				setErrorMsg('There was an error logging you in')
 			})
 	}
 
@@ -88,7 +64,7 @@ function Login() {
 						<Alert color="warning" isOpen={isError}>
 							{errorMsg}
 						</Alert>
-						<Button onClick={login}>Login</Button>
+						<Button onClick={handleLogin}>Login</Button>
 					</Form>
 				</CardBody>
 				<CardFooter>

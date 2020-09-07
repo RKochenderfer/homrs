@@ -1,4 +1,4 @@
-use crate::models::api_key::LogoutKey;
+use crate::models::api_key::{LogoutKey, ApiKey};
 use crate::models::response::{GenericResponse, LoginResponse};
 use crate::models::session::{PostSession, Session, LoginStatus};
 use crate::Database;
@@ -16,7 +16,7 @@ fn add_private_cookie(session: &Session, mut cookies: Cookies) {
     cookies.add_private(cookie);
 }
 
-/// # POST /sessions
+/// # POST /login
 /// Creates a new session in the database
 ///
 /// # Example body
@@ -53,7 +53,12 @@ pub fn post(
     }
 }
 
-/// # DELETE /sessions
+#[get("/sessions/status")]
+pub fn status(_api_key: ApiKey) -> status::NoContent {
+    status::NoContent
+}
+
+/// # DELETE /api/logout
 /// Deletes a session in the database
 #[delete("/logout")]
 pub fn delete(
