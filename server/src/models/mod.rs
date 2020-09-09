@@ -4,3 +4,6 @@ pub mod session;
 pub mod user;
 pub mod recipe;
 pub mod weekly_menu;
+pub mod ingredients;
+pub mod recipe_step;
+pub mod recipe_step_ingredient;

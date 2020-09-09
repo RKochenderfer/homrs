@@ -1,16 +1,13 @@
 use serde::{Serialize, Deserialize};
+use crate::models::recipe_step::PostRecipeSteps;
 
-#[derive(Deserialize)]
-struct PostIngredients {
-    name: String,
-    description: String,
-}
+#[derive(Serialize)]
+pub struct Recipe {
+    id: i32,
+    recipe_name: String,
+    recipe_description: String,
+    meal_category: String, // Typically Breakfast, Lunch, Dinner
 
-#[derive(Deserialize)]
-struct PostRecipeSteps {
-    step_number: u32,
-    instructions: String,
-    ingredients: Vec<PostIngredients>
 }
 
 #[derive(Deserialize)]
