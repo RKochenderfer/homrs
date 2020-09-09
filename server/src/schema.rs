@@ -9,7 +9,7 @@ table! {
 table! {
     recipe_step_ingredients (id) {
         id -> Int4,
-        step_number -> Int4,
+        step_id -> Int4,
         ingredient_id -> Int4,
     }
 }
@@ -92,7 +92,7 @@ table! {
 }
 
 joinable!(recipe_step_ingredients -> ingredients (ingredient_id));
-joinable!(recipe_step_ingredients -> recipe_steps (step_number));
+joinable!(recipe_step_ingredients -> recipe_steps (step_id));
 joinable!(recipe_steps -> recipes (recipe_id));
 joinable!(recipes -> users (user_id));
 joinable!(sessions -> users (user_id));
