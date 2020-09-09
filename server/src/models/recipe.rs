@@ -3,7 +3,8 @@ use serde::{Serialize, Deserialize};
 use crate::models::recipe_step::PostRecipeSteps;
 use chrono::NaiveDateTime;
 
-#[derive(Serialize, Queryable)]
+#[derive(Serialize, Queryable, AsChangeset)]
+#[table_name = "recipes"]
 pub struct Recipe {
     id: i32,
     recipe_name: String,
@@ -13,6 +14,20 @@ pub struct Recipe {
     number_of_servings: Option<i32>,
     calories_per_serving: Option<i32>,
     user_id: Option<i32>,
+    created_at: NaiveDateTime,
+    updated_at: NaiveDateTime,
+}
+
+#[derive(Insertable)]
+#[table_name = "recipes"]
+pub struct InsertRecipe {
+    recipe_name: String,
+    recipe_description: String,
+    meal_category: String,
+    preparation_time: String,
+    number_of_servings: i32,
+    calories_per_serving: i32,
+    user_id: i32,
     created_at: NaiveDateTime,
     updated_at: NaiveDateTime,
 }
