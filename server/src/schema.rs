@@ -70,6 +70,10 @@ table! {
         thursday_meal -> Int4,
         friday_meal -> Int4,
         saturday_meal -> Int4,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
+        menu_start_date -> Date,
+        menu_end_date -> Date,
     }
 }
 
