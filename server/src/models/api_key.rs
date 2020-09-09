@@ -52,7 +52,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for ApiKey {
                     // Check if 7 days has passed since last action
                     if now.signed_duration_since(s.last_action).num_days() > 7 {
                         // Delete session
-                        if let Err(_) = Session::delete(&db.0, s.id) {
+                        if Session::delete(&db.0, s.id).is_err() {
                             Outcome::Failure((
                                 Status::InternalServerError,
                                 ApiKeyError::DatabaseError,

@@ -29,7 +29,7 @@ impl GenericResponse {
             message: message.to_owned(),
             ok: false,
         };
-        return status::BadRequest(Some(Json(gr)));
+        status::BadRequest(Some(Json(gr)))
     }
 }
 
