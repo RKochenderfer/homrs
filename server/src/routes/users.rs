@@ -1,6 +1,6 @@
 use crate::models::api_key::ApiKey;
 use crate::models::response::GenericResponse;
-use crate::models::user::{PostUser, PutUser, User, ChangePassword};
+use crate::models::user::{ChangePassword, PostUser, PutUser, User};
 use crate::Database;
 use rocket::response::status;
 use rocket_contrib::json::Json;
@@ -50,7 +50,11 @@ pub fn change_password(
     change_password: Json<ChangePassword>,
     api_key: ApiKey,
 ) -> Result<Json<GenericResponse>, status::BadRequest<Json<GenericResponse>>> {
-    match User::update_password(&*conn, change_password.into_inner().password, api_key.user_id) {
+    match User::update_password(
+        &*conn,
+        change_password.into_inner().password,
+        api_key.user_id,
+    ) {
         Ok(_) => Ok(Json(GenericResponse::default())),
         Err(e) => Err(GenericResponse::new_bad_response(&e.to_string())),
     }

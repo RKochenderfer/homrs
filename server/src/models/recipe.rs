@@ -1,7 +1,7 @@
-use crate::schema::recipes;
-use serde::{Serialize, Deserialize};
 use crate::models::recipe_step::PostRecipeSteps;
+use crate::schema::recipes;
 use chrono::NaiveDateTime;
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Queryable, AsChangeset)]
 #[table_name = "recipes"]
@@ -40,5 +40,5 @@ pub struct PostRecipe {
     preparation_time: String,
     number_of_servings: i32,
     calories_per_serving: i32,
-    recipe_steps: Vec<PostRecipeSteps>
+    recipe_steps: Vec<PostRecipeSteps>,
 }

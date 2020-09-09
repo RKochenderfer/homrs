@@ -1,6 +1,6 @@
-use crate::models::api_key::{LogoutKey, ApiKey};
+use crate::models::api_key::{ApiKey, LogoutKey};
 use crate::models::response::{GenericResponse, LoginResponse};
-use crate::models::session::{PostSession, Session, LoginStatus};
+use crate::models::session::{LoginStatus, PostSession, Session};
 use crate::Database;
 use rocket::config::Environment;
 use rocket::http::{Cookie, Cookies};
@@ -41,15 +41,15 @@ pub fn post(
         LoginStatus::LoggedIn(s) => {
             add_private_cookie(&s, cookies);
             Ok(Json(LoginResponse::new(true, false)))
-        },
+        }
         LoginStatus::AlreadyLoggedIn(s) => {
             add_private_cookie(&s, cookies);
-            Ok(Json(LoginResponse::new(true,false)))
-        },
-        LoginStatus::IncorrectPassword => {
-            Ok(Json(LoginResponse::new(false,true)))
-        },
-        LoginStatus::UserDoesNotExist => {Err(GenericResponse::new_bad_response("User does not exist."))},
+            Ok(Json(LoginResponse::new(true, false)))
+        }
+        LoginStatus::IncorrectPassword => Ok(Json(LoginResponse::new(false, true))),
+        LoginStatus::UserDoesNotExist => {
+            Err(GenericResponse::new_bad_response("User does not exist."))
+        }
     }
 }
 

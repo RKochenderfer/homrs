@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use crate::models::ingredients::PostIngredients;
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Queryable)]
 pub struct RecipeSteps {
@@ -13,5 +13,5 @@ pub struct RecipeSteps {
 pub struct PostRecipeSteps {
     step_number: i32,
     instructions: String,
-    ingredients: Vec<PostIngredients>
+    ingredients: Vec<PostIngredients>,
 }

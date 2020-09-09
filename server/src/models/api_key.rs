@@ -53,7 +53,10 @@ impl<'a, 'r> FromRequest<'a, 'r> for ApiKey {
                     if now.signed_duration_since(s.last_action).num_days() > 7 {
                         // Delete session
                         if let Err(_) = Session::delete(&db.0, s.id) {
-                            Outcome::Failure((Status::InternalServerError, ApiKeyError::DatabaseError))
+                            Outcome::Failure((
+                                Status::InternalServerError,
+                                ApiKeyError::DatabaseError,
+                            ))
                         } else {
                             // The session token has expired and should be deleted
                             Outcome::Failure((Status::BadRequest, ApiKeyError::Expired))
@@ -61,12 +64,15 @@ impl<'a, 'r> FromRequest<'a, 'r> for ApiKey {
                     } else {
                         // Update last used time
                         if let Err(_) = s.update_last_action(&db.0, now) {
-                            Outcome::Failure((Status::InternalServerError, ApiKeyError::DatabaseError))
+                            Outcome::Failure((
+                                Status::InternalServerError,
+                                ApiKeyError::DatabaseError,
+                            ))
                         } else {
                             Outcome::Success(ApiKey::new(s.user_id, token.0))
                         }
                     }
-                },
+                }
                 None => Outcome::Failure((Status::BadRequest, ApiKeyError::Missing)),
             },
             Err(_) => Outcome::Failure((Status::InternalServerError, ApiKeyError::DatabaseError)),

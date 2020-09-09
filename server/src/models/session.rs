@@ -123,7 +123,7 @@ impl<'a> PostSession<'a> {
         // Grab user with given email
         if let Some(user) = User::get_by_email(conn, self.email)? {
             if let Some(found) = Session::check_exists(conn, user.id)? {
-                return Ok(LoginStatus::AlreadyLoggedIn(found))
+                return Ok(LoginStatus::AlreadyLoggedIn(found));
             }
             // if let found = Session::check_exists(conn, user.id)? {
             //

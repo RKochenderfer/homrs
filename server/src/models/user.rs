@@ -1,5 +1,5 @@
 use crate::cust_error::{Error, Result};
-use crate::models::session::{Session};
+use crate::models::session::Session;
 use crate::schema::users;
 use crate::schema::users::dsl::*;
 use argon2::{self, Config};
@@ -120,14 +120,16 @@ impl User {
         Ok(updated.save_changes(conn)?)
     }
 
-    pub fn update_password(conn: &PgConnection, password: &str, user_id: i32) -> Result<()>{
+    pub fn update_password(conn: &PgConnection, password: &str, user_id: i32) -> Result<()> {
         let salt = std::env::var("SALT")?;
         let config = Config::default();
         let hash = argon2::hash_encoded(password.as_bytes(), salt.as_bytes(), &config)?;
 
         let updated = UpdateUserPassword::new(user_id, &hash);
 
-        let _ = updated.save_changes::<User>(conn).expect("Failed to update password.");
+        let _ = updated
+            .save_changes::<User>(conn)
+            .expect("Failed to update password.");
 
         Ok(())
     }
