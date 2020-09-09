@@ -1,6 +1,4 @@
-use crate::schema::weekly_menus;
 use chrono::NaiveDate;
-use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Queryable)]
