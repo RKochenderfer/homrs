@@ -44,6 +44,7 @@ fn main() {
                 routes::sessions::post,
                 routes::sessions::status,
                 routes::sessions::delete,
+                routes::recipes::post,
             ],
         )
         .launch();
