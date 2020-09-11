@@ -5,10 +5,11 @@ use crate::Database;
 use rocket::response::status;
 use rocket_contrib::json::Json;
 
-/// # POST /users
+/// # POST /api/users
 /// Creates a new user in the database
 ///
 /// # Example body
+/// ```
 /// {
 ///     "email": "test@gmail.com",
 ///     "first_name": "Jane",
@@ -16,7 +17,7 @@ use rocket_contrib::json::Json;
 ///     "password": "SuperStr0ngPassw0rd!",
 ///     "user_role": "ADM"
 /// }
-///
+///```
 #[post("/users", data = "<user>")]
 pub fn post(
     conn: Database,
@@ -32,6 +33,17 @@ pub fn post(
     }
 }
 
+/// # PUT /api/users
+///
+/// # Example body
+/// ```
+/// {
+///     "email": "test@gmail.com",
+///     "first_name": "Jane",
+///     "last_name": "Doe",
+///     "user_role": "ADM"
+/// }
+/// ```
 #[put("/users", data = "<put_user>")]
 pub fn put(
     conn: Database,
@@ -44,6 +56,14 @@ pub fn put(
     }
 }
 
+/// # PUT /api/users/password
+///
+/// # Example boud
+/// ```
+/// {
+///     "password": "ExtraStr0ngPassw0rd@$!%"
+/// }
+/// ```
 #[put("/users/password", data = "<change_password>")]
 pub fn change_password(
     conn: Database,
