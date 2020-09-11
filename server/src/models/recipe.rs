@@ -76,11 +76,11 @@ pub struct PostRecipe {
 
 impl PostRecipe {
     /// Handles the creation of recipe, recipe_step, recipe_step_ingredient
-    pub fn create_recipe(&self, conn: &PgConnection, recipe_user_id: i32) -> Result<()> {
+    pub fn create_recipe(&self, conn: &PgConnection, recipe_user_id: i32) -> Result<Recipe> {
         // Create transaction for whole recipe
         let insert_recipe = InsertRecipe::new(self, recipe_user_id);
         // Create the entry in the recipes table
-        conn.transaction::<_, DieselError, _>(|| {
+        let recipe = conn.transaction::<Recipe, DieselError, _>(|| {
             let recipe = Recipe::create(conn, &insert_recipe).expect("Failed to insert recipe");
             for step in self.recipe_steps.iter() {
                 let recipe_step = step
@@ -93,12 +93,12 @@ impl PostRecipe {
                 }
             }
 
-            Ok(())
+            Ok(recipe)
         })
         .expect("Failed to create recipe");
 
         // Create recipe_steps and recipe_steps_ingredients together
 
-        Ok(())
+        Ok(recipe)
     }
 }
