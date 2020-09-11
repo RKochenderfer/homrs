@@ -20,11 +20,12 @@ fn add_private_cookie(session: &Session, mut cookies: Cookies) {
 /// Creates a new session in the database
 ///
 /// # Example body
+/// ```
 /// {
 ///     "email": "test@gmail.com",
 ///     "password": "SuperStr0ngPassw0rd!",
 /// }
-///
+///```
 #[post("/login", data = "<post_session>")]
 pub fn post(
     conn: Database,
