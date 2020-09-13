@@ -1,9 +1,9 @@
-use crate::Database;
-use rocket_contrib::json::Json;
-use crate::models::recipe::{PostRecipe, Recipe};
 use crate::models::api_key::ApiKey;
+use crate::models::recipe::{PostRecipe, Recipe};
 use crate::models::response::GenericResponse;
+use crate::Database;
 use rocket::response::status;
+use rocket_contrib::json::Json;
 
 /// # POST /api/users
 /// Creates a new recipe in the database
@@ -39,10 +39,21 @@ use rocket::response::status;
 pub fn post(
     conn: Database,
     post_recipe: Json<PostRecipe>,
-    api_key: ApiKey
+    api_key: ApiKey,
 ) -> Result<Json<Recipe>, status::BadRequest<Json<GenericResponse>>> {
     match post_recipe.create_recipe(&*conn, api_key.user_id) {
         Ok(recipe) => Ok(Json(recipe)),
-        Err(e) => Err(GenericResponse::new_bad_response(&e.to_string()))
+        Err(e) => Err(GenericResponse::new_bad_response(&e.to_string())),
+    }
+}
+
+#[get("/recipes")]
+pub fn get_all(
+    conn: Database,
+    api_key: ApiKey,
+) -> Result<Json<Vec<Recipe>>, status::NotFound<Json<GenericResponse>>> {
+    match Recipe::get_by_user_id(&*conn, api_key.user_id) {
+        Ok(v) => Ok(Json(v)),
+        Err(e) => Err(GenericResponse::new_not_found(&e.to_string())),
     }
 }

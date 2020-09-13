@@ -31,6 +31,15 @@ impl GenericResponse {
         };
         status::BadRequest(Some(Json(gr)))
     }
+
+    pub fn new_not_found(message: &str) -> status::NotFound<Json<GenericResponse>> {
+        let gr = GenericResponse {
+            message: message.to_owned(),
+            ok: false,
+        };
+
+        status::NotFound(Json(gr))
+    }
 }
 
 #[derive(Debug, Serialize)]

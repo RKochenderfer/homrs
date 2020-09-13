@@ -31,6 +31,17 @@ impl Recipe {
             .get_result(conn)
             .expect("Failed to insert recipes."))
     }
+
+    pub fn get_by_user_id(conn: &PgConnection, u_id: i32) -> Result<Vec<Recipe>> {
+        use crate::schema::recipes::dsl::*;
+
+        let x = recipes
+            .filter(user_id.eq(u_id))
+            .load::<Recipe>(conn)
+            .expect("Failed to load recipes");
+
+        Ok(x)
+    }
 }
 
 #[derive(Insertable)]
@@ -80,22 +91,23 @@ impl PostRecipe {
         // Create transaction for whole recipe
         let insert_recipe = InsertRecipe::new(self, recipe_user_id);
         // Create the entry in the recipes table
-        let recipe = conn.transaction::<Recipe, DieselError, _>(|| {
-            let recipe = Recipe::create(conn, &insert_recipe).expect("Failed to insert recipe");
-            for step in self.recipe_steps.iter() {
-                let recipe_step = step
-                    .create_recipe_step(conn, recipe.id)
-                    .expect("Failed to insert recipe_step");
-                for ingredient_step in step.ingredients.iter() {
-                    ingredient_step
-                        .create_recipe_step_ingredient(conn, recipe_step.id)
-                        .expect("Failed to insert ingredient step.");
+        let recipe = conn
+            .transaction::<Recipe, DieselError, _>(|| {
+                let recipe = Recipe::create(conn, &insert_recipe).expect("Failed to insert recipe");
+                for step in self.recipe_steps.iter() {
+                    let recipe_step = step
+                        .create_recipe_step(conn, recipe.id)
+                        .expect("Failed to insert recipe_step");
+                    for ingredient_step in step.ingredients.iter() {
+                        ingredient_step
+                            .create_recipe_step_ingredient(conn, recipe_step.id)
+                            .expect("Failed to insert ingredient step.");
+                    }
                 }
-            }
 
-            Ok(recipe)
-        })
-        .expect("Failed to create recipe");
+                Ok(recipe)
+            })
+            .expect("Failed to create recipe");
 
         // Create recipe_steps and recipe_steps_ingredients together
 
