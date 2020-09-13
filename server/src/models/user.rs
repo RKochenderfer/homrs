@@ -30,7 +30,7 @@ impl User {
         let config = Config::default();
         let hash = argon2::hash_encoded(new_user.password.as_bytes(), salt.as_bytes(), &config)?;
         let created = chrono::Utc::now().naive_utc();
-        let updated = created.clone();
+        let updated = created;
         let insert = InsertUser {
             email: new_user.email.to_owned(),
             first_name: new_user.first_name.to_owned(),
@@ -65,7 +65,7 @@ impl User {
             .load::<User>(conn)
             .expect("Failed to load user.");
 
-        if result.len() > 0 {
+        if !result.is_empty() {
             Ok(Some(result.pop().unwrap()))
         } else {
             // Err(Error::boxed(&format!("Could not find user with email: {}", user_email)))

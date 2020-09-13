@@ -39,7 +39,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for ApiKey {
         let token;
         // Check to make sure the cookie exists
         match request.cookies().get_private("session-token") {
-            Some(cookie) => token = cookie.value().parse().map(|token| Token(token)).unwrap(),
+            Some(cookie) => token = cookie.value().parse().map(Token).unwrap(),
             None => return Outcome::Failure((Status::BadRequest, ApiKeyError::Missing)),
         }
 
@@ -63,7 +63,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for ApiKey {
                         }
                     } else {
                         // Update last used time
-                        if let Err(_) = s.update_last_action(&db.0, now) {
+                        if s.update_last_action(&db.0, now).is_err() {
                             Outcome::Failure((
                                 Status::InternalServerError,
                                 ApiKeyError::DatabaseError,
@@ -116,7 +116,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for LogoutKey {
                     .value()
                     .parse()
                     .ok()
-                    .map(|token| Token(token))
+                    .map(Token)
                     .unwrap()
             }
             None => return Outcome::Failure((Status::BadRequest, LogoutKeyError::Missing)),

@@ -23,7 +23,7 @@ impl Session {
             .load::<Session>(conn)
             .expect("Error loading user");
 
-        if result.len() > 0 {
+        if !result.is_empty() {
             Ok(result.pop())
         } else {
             Ok(None)
@@ -36,7 +36,7 @@ impl Session {
             .load::<Session>(conn)
             .expect("Error loading user");
 
-        if result.len() > 0 {
+        if !result.is_empty() {
             Ok(Some(result.pop().unwrap()))
         } else {
             Ok(None)
@@ -60,7 +60,7 @@ impl Session {
             .expect("Failed to insert session."))
     }
 
-    pub fn delete<'a>(conn: &PgConnection, session_id: i32) -> Result<()> {
+    pub fn delete(conn: &PgConnection, session_id: i32) -> Result<()> {
         let deleted_count = diesel::delete(sessions.filter(id.eq(session_id))).execute(conn)?;
 
         if deleted_count > 0 {
